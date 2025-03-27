@@ -1,0 +1,647 @@
+{
+  "info": {
+    "name": "Library Management API Collection",
+    "description": "Postman Collection for testing Library Management APIs based on provided controller code",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"1234567890\",\n  \"role\": \"member\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"User registered successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"1234567890\",\n    \"role\": \"member\",\n    \"isApproved\": false,\n    \"generatedPassword\": \"generated_password_here\"\n  },\n  \"note\": \"In a production environment, the password would be sent via email\"\n}"
+            },
+            {
+              "name": "Email Exists",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Email is already registered\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"generated_password_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"token\": \"jwt_token_here\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"role\": \"member\"\n  }\n}"
+            },
+            {
+              "name": "Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\"\n}"
+            },
+            {
+              "name": "Pending Approval",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Your account is pending approval\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users (Admin Only)",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"count\": 2,\n  \"data\": [{\"id\": 1, \"name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"phone\": \"1234567890\", \"role\": \"member\", \"isApproved\": false}, {\"id\": 2, \"name\": \"Admin\", \"email\": \"admin@example.com\", \"role\": \"admin\", \"isApproved\": true}]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\"id\": 1, \"name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"phone\": \"1234567890\", \"role\": \"member\", \"isApproved\": false}\n}"
+            },
+            {
+              "name": "Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"success\": false,\n  \"message\": \"User not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"phone\": \"0987654321\",\n  \"role\": \"member\",\n  \"isApproved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"User created successfully\",\n  \"data\": {\"id\": 3, \"name\": \"Jane Doe\", \"email\": \"jane.doe@example.com\", \"phone\": \"0987654321\", \"role\": \"member\", \"isApproved\": true, \"generatedPassword\": \"generated_password_here\"}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"User updated successfully\",\n  \"data\": {\"id\": 1, \"name\": \"John Updated\", \"email\": \"john.doe@example.com\", \"phone\": \"1234567890\", \"role\": \"member\", \"isApproved\": false}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"User deleted successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Approve User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1", "approve"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"User approved successfully\",\n  \"data\": {\"id\": 1, \"name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"role\": \"member\", \"isApproved\": true}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Get All Books (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"count\": 1,\n  \"data\": [{\"id\": 1, \"title\": \"Sample Book\", \"author\": \"Author Name\", \"isbn\": \"1234567890\", \"quantity\": 5, \"availableQuantity\": 5, \"publishedYear\": 2020, \"description\": \"A sample book\"}]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Book by ID (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/books/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\"id\": 1, \"title\": \"Sample Book\", \"author\": \"Author Name\", \"isbn\": \"1234567890\", \"quantity\": 5, \"availableQuantity\": 5, \"publishedYear\": 2020, \"description\": \"A sample book\"}\n}"
+            },
+            {
+              "name": "Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Book not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Book (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Book\",\n  \"author\": \"New Author\",\n  \"isbn\": \"0987654321\",\n  \"quantity\": 3,\n  \"publishedYear\": 2023,\n  \"description\": \"A new book description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Book created successfully\",\n  \"data\": {\"id\": 2, \"title\": \"New Book\", \"author\": \"New Author\", \"isbn\": \"0987654321\", \"quantity\": 3, \"availableQuantity\": 3, \"publishedYear\": 2023, \"description\": \"A new book description\"}\n}"
+            },
+            {
+              "name": "ISBN Exists",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"A book with this ISBN already exists\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Book (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Book\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Book updated successfully\",\n  \"data\": {\"id\": 1, \"title\": \"Updated Book\", \"author\": \"Author Name\", \"isbn\": \"1234567890\", \"quantity\": 5, \"availableQuantity\": 5, \"publishedYear\": 2020, \"description\": \"A sample book\"}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Book (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Book deleted successfully\"\n}"
+            },
+            {
+              "name": "Book Borrowed",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot delete book as it has been borrowed\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Borrowing",
+      "item": [
+        {
+          "name": "Get My Borrows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "me"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"count\": 1,\n  \"data\": [{\"id\": 1, \"bookId\": 1, \"userId\": 1, \"dueDate\": \"2025-04-10\", \"status\": \"borrowed\", \"book\": {\"id\": 1, \"title\": \"Sample Book\", \"author\": \"Author Name\", \"isbn\": \"1234567890\"}}]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Borrows (Admin/Librarian)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"count\": 1,\n  \"data\": [{\"id\": 1, \"bookId\": 1, \"userId\": 1, \"dueDate\": \"2025-04-10\", \"status\": \"borrowed\", \"user\": {\"id\": 1, \"name\": \"John Doe\", \"email\": \"john.doe@example.com\"}, \"book\": {\"id\": 1, \"title\": \"Sample Book\", \"author\": \"Author Name\", \"isbn\": \"1234567890\"}}]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Borrows (Admin/Librarian)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/user/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "user", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"count\": 1,\n  \"data\": [{\"id\": 1, \"bookId\": 1, \"userId\": 1, \"dueDate\": \"2025-04-10\", \"status\": \"borrowed\", \"book\": {\"id\": 1, \"title\": \"Sample Book\", \"author\": \"Author Name\", \"isbn\": \"1234567890\"}}]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Borrow Book (Member)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": 1,\n  \"dueDate\": \"2025-04-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/borrow",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "borrow"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Book borrowed successfully\",\n  \"data\": {\"id\": 1, \"bookId\": 1, \"userId\": 1, \"dueDate\": \"2025-04-10\", \"status\": \"borrowed\"}\n}"
+            },
+            {
+              "name": "Not Available",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Book is not available for borrowing\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Return Book (Member)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"borrowId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/return",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "return"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Book returned successfully\",\n  \"data\": {\"id\": 1, \"bookId\": 1, \"userId\": 1, \"dueDate\": \"2025-04-10\", \"status\": \"returned\", \"returnDate\": \"2025-03-27\"}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Record Borrowing (Librarian)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": 1,\n  \"userId\": 1,\n  \"action\": \"borrow\",\n  \"dueDate\": \"2025-04-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/record",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "record"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Book borrowing recorded successfully\",\n  \"data\": {\"id\": 2, \"bookId\": 1, \"userId\": 1, \"dueDate\": \"2025-04-10\", \"status\": \"borrowed\", \"recordedByLibrarian\": true}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Record Return (Librarian)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"borrowId\": 1,\n  \"userId\": 1,\n  \"action\": \"return\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/record",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "record"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Book return recorded successfully\",\n  \"data\": {\"id\": 1, \"bookId\": 1, \"userId\": 1, \"status\": \"returned\", \"returnDate\": \"2025-03-27\", \"recordedByLibrarian\": true}\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
